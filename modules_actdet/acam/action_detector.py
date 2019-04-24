@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-import modules.acam.i3d as i3d
+import modules_actdet.acam.i3d as i3d
 
 class Action_Detector():
     def __init__(self, model_arc, timesteps=32, session=None):

@@ -2,15 +2,15 @@
 from darkflow.net.build import TFNet
 import numpy as np
 from time import time 
-from modules.data_reader import DataReader
-from modules.data_writer import DataWriter
+from modules_actdet.data_reader import DataReader
+from modules_actdet.data_writer import DataWriter
 from os.path import join 
 import os 
 
 # Place your downloaded cfg and weights under "checkpoints/"
-YOLO_CONFIG = join(os.getcwd(),'checkpoints/yolo_cfg')
-YOLO_MODEL = join(os.getcwd(),'checkpoints/yolo_cfg/yolo.cfg')
-YOLO_WEIGHTS = join(os.getcwd(),'checkpoints/yolo.weights')
+YOLO_CONFIG = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/cfg'
+YOLO_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/cfg/yolo.cfg'
+YOLO_WEIGHTS = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/yolo/yolo.weights'
 
 GPU_ID = 0
 GPU_UTIL = 0.5

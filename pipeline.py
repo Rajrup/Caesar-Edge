@@ -1,22 +1,22 @@
-from modules.data_reader import DataReader
-from modules.object_detector_ssd import SSD
-from modules.object_detector_yolo import YOLO
-from modules.reid_extractor import FeatureExtractor
-from modules.tracker_deepsort import DeepSort
-from modules.tube_manager import TubeManager
-from modules.action_detector_acam import ACAM
+from modules_actdet.data_reader import DataReader
+from modules_actdet.object_detector_ssd import SSD
+from modules_actdet.object_detector_yolo import YOLO
+from modules_actdet.reid_extractor import FeatureExtractor
+from modules_actdet.tracker_deepsort import DeepSort
+from modules_actdet.tube_manager import TubeManager
+from modules_actdet.action_detector_acam import ACAM
 import sys 
 
 # ============ Video Input Modules ============
 reader = DataReader()
-reader.Setup(sys.argv[1])
+reader.Setup("/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/indoor_two_ppl.avi")
 
 # ============ Object Detection Modules ============
 ssd = SSD()
 ssd.Setup()
 
-yolo = YOLO()
-yolo.Setup()
+# yolo = YOLO()
+# yolo.Setup()
 
 object_detector = ssd
 
@@ -69,4 +69,5 @@ while(True):
     action_data = action_detector.PostProcess()
 
     if action_data:
-        print(action_data['meta']['obj'])
+        # print(action_data['meta']['obj'])
+        print(action_data['meta'])

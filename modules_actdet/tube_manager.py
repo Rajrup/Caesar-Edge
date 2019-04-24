@@ -1,4 +1,4 @@
-from modules.acam.manage_tube import TManager
+from modules_actdet.acam.manage_tube import TManager
 import sys 
 import numpy as np 
 from os.path import join 
@@ -6,8 +6,8 @@ import os
 from time import time 
 
 # These two numbers should be same as your video input 
-VIDEO_WID = 1920    
-VIDEO_HEI = 1080
+VIDEO_WID = 1280    
+VIDEO_HEI = 720
 
 CACHE_SIZE = 32      # number of consecutive frames 
 MIN_TUBE_LEN = 16    # output a list of tube images every MIN_TUBE_LEN new frames

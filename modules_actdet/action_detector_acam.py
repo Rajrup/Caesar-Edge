@@ -1,18 +1,18 @@
-import modules.acam.action_detector as act
+import modules_actdet.acam.action_detector as act
 import sys 
 import numpy as np 
 from os.path import join 
 import os 
 from time import time 
-from modules.data_reader import DataReader
-from modules.data_writer import DataWriter
+from modules_actdet.data_reader import DataReader
+from modules_actdet.data_writer import DataWriter
 
 # Download the model file to 'checkpoints/'
-ACAM_MODEL = join(os.getcwd(),'checkpoints/model_ckpt_soft_attn_pooled_cosine_drop_ava-130')
+ACAM_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/acam/model_ckpt_soft_attn_pooled_cosine_drop_ava-130'
 
 # These two numbers should be same as your video input 
-VIDEO_WID = 1920    
-VIDEO_HEI = 1080
+VIDEO_WID = 1280    
+VIDEO_HEI = 720
 
 CACHE_SIZE = 32      # number of consecutive frames 
 MIN_TUBE_LEN = 16    # output a list of tube images every MIN_TUBE_LEN new frames

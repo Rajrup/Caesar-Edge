@@ -2,15 +2,15 @@ import sys
 import numpy as np
 import tensorflow as tf
 from time import time 
-from modules.data_reader import DataReader
-from modules.data_writer import DataWriter
+from modules_actdet.data_reader import DataReader
+from modules_actdet.data_writer import DataWriter
 from os.path import join 
 import os 
 
 # Place your downloaded ckpt under "checkpoints/"
-SSD_CKPT = join(os.getcwd(), 'checkpoints/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt')
+SSD_CKPT = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/ssd/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
 
-SSD_HOME = join(os.getcwd(), 'modules/SSD-Tensorflow') 
+SSD_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/SSD-Tensorflow'
 sys.path.insert(0, SSD_HOME)
 from nets import ssd_vgg_512, ssd_common, np_methods
 from preprocessing import ssd_vgg_preprocessing

@@ -3,10 +3,10 @@ from os.path import join
 import os 
 import sys 
 from time import time 
-from modules.data_reader import DataReader
-from modules.data_writer import DataWriter
+from modules_actdet.data_reader import DataReader
+from modules_actdet.data_writer import DataWriter
 
-DS_HOME = join(os.getcwd(), 'modules/deep_sort')
+DS_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/deep_sort'
 sys.path.insert(0, DS_HOME)
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker

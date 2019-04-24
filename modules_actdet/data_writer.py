@@ -2,7 +2,7 @@ import os
 import numpy as np
 import sys 
 from time import time 
-from modules.data_reader import DataReader
+from modules_actdet.data_reader import DataReader
 
 ''' Write metadata to file 
 
