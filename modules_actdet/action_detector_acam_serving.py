@@ -69,7 +69,7 @@ class ACAM:
     probs = []
 
     def Setup(self):
-        self.act_detector = act.Action_Detector('soft_attn')
+        # self.act_detector = act.Action_Detector('soft_attn')
         # self.updated_frames, self.temporal_rois, self.temporal_roi_batch_indices, cropped_frames = \
         #             self.act_detector.crop_tubes_in_tf_with_memory([CACHE_SIZE,
         #                                                             VIDEO_HEI,VIDEO_WID,3], 
@@ -79,7 +79,7 @@ class ACAM:
         #             self.act_detector.define_inference_with_placeholders_noinput(cropped_frames)
 
         # self.act_detector.restore_model(ACAM_MODEL)
-
+        pass
 
     def PreProcess(self, input):
         self.input = input 

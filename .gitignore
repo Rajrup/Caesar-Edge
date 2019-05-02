@@ -3,6 +3,6 @@ indoor_two_ppl.avi
 */*.pyc
 modules_actdet/acam/*.pyc
 actdet_ssd/*
-actdet_deepsort/*
+actdet_reid/*
 actdet_acam/*
 actdet_yolo/*

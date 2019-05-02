@@ -37,13 +37,13 @@ reader = DataReader()
 reader.Setup("/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/indoor_two_ppl.avi")
 
 # ============ Object Detection Modules ============
-# ssd = SSD()
-# ssd.Setup()
+ssd = SSD()
+ssd.Setup()
 
-yolo = YOLO()
-yolo.Setup()
+# yolo = YOLO()
+# yolo.Setup()
 
-object_detector = yolo
+object_detector = ssd
 
 # # ============ Tracking Modules ============
 feature_extractor = FeatureExtractor()
@@ -64,8 +64,8 @@ acam.Setup()
 action_detector = acam
 
 frame_id = -1
-while(True):
-# while (frame_id < 32):
+# while(True):
+while (frame_id < 10):
     frame_id += 1
 
     # Read input
@@ -86,29 +86,29 @@ while(True):
     feature_extractor.Apply()
     feature_data = feature_extractor.PostProcess()
 
-    # print(feature_data)
+    # print(feature_data['meta']['obj'][0]['feature'])
     # break
 
     tracker.PreProcess(feature_data)
     tracker.Apply()
     track_data = tracker.PostProcess()
 
-    # print(track_data['meta'])
+    print(track_data['meta'])
 
-    # Action detection module 
-    tube_manager.PreProcess(track_data)
-    tube_manager.Apply()
-    tube_data = tube_manager.PostProcess()
+    # # Action detection module 
+    # tube_manager.PreProcess(track_data)
+    # tube_manager.Apply()
+    # tube_data = tube_manager.PostProcess()
 
-    # if ('meta' in tube_data):
-    #   print(tube_data['meta']['obj']['temporal_rois'])
-    # else:
-    #   print(tube_data)
+    # # if ('meta' in tube_data):
+    # #   print(tube_data['meta']['obj']['temporal_rois'])
+    # # else:
+    # #   print(tube_data)
 
-    action_detector.PreProcess(tube_data)
-    action_detector.Apply()
-    action_data = action_detector.PostProcess()
+    # action_detector.PreProcess(tube_data)
+    # action_detector.Apply()
+    # action_data = action_detector.PostProcess()
 
-    if action_data:
-        # print(action_data['meta']['obj'])
-        print(action_data['meta'])
+    # if action_data:
+    #     # print(action_data['meta']['obj'])
+    #     print(action_data['meta'])
