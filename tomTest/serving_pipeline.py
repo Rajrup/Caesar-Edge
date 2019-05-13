@@ -64,8 +64,8 @@ acam.Setup()
 action_detector = acam
 
 frame_id = -1
-# while(True):
-while (frame_id < 10):
+while(True):
+# while (frame_id < 32):
     frame_id += 1
 
     # Read input
@@ -93,22 +93,22 @@ while (frame_id < 10):
     tracker.Apply()
     track_data = tracker.PostProcess()
 
-    print(track_data['meta'])
+    # print(track_data['meta'])
 
-    # # Action detection module 
-    # tube_manager.PreProcess(track_data)
-    # tube_manager.Apply()
-    # tube_data = tube_manager.PostProcess()
+    # Action detection module 
+    tube_manager.PreProcess(track_data)
+    tube_manager.Apply()
+    tube_data = tube_manager.PostProcess()
 
-    # # if ('meta' in tube_data):
-    # #   print(tube_data['meta']['obj']['temporal_rois'])
-    # # else:
-    # #   print(tube_data)
+    # if ('meta' in tube_data):
+    #   print(tube_data['meta']['obj']['temporal_rois'])
+    # else:
+    #   print(tube_data)
 
-    # action_detector.PreProcess(tube_data)
-    # action_detector.Apply()
-    # action_data = action_detector.PostProcess()
+    action_detector.PreProcess(tube_data)
+    action_detector.Apply()
+    action_data = action_detector.PostProcess()
 
-    # if action_data:
-    #     # print(action_data['meta']['obj'])
-    #     print(action_data['meta'])
+    if action_data:
+        # print(action_data['meta']['obj'])
+        print(action_data['meta'])
