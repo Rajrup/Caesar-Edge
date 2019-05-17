@@ -54,9 +54,10 @@ class TubeManager:
               output['meta']['obj'].append({'box':[int(tt[0]), int(tt[1]), int(tt[2]), int(tt[3])], 'tid': int(tt[4])})
           return output
 
-    def PreProcess(self, request_input, istub, tube_manager, grpc_flag):
+    def PreProcess(self, request_input, istub, tube_manager, my_lock, grpc_flag):
         self.istub = istub
         self.tube_manager = tube_manager
+        self.my_lock = my_lock
 
         if (grpc_flag):
             self.request_input = str(tensor_util.MakeNdarray(request_input.inputs["client_input"]))
@@ -69,7 +70,10 @@ class TubeManager:
             self.frame_id = int(request_input['frame_info'].split('-')[-1])
 
         tube_input = self.getTubeInput(self.image, self.frame_id, deepsort_output)
+
+        self.my_lock.acquire()
         self.tube_manager.add_frame(tube_input)
+        self.my_lock.release()
 
         self.can_output = False
 
@@ -79,7 +83,10 @@ class TubeManager:
         elif (not self.tube_manager.has_new_tube()):
             return
         else:
+            self.my_lock.acquire()
             self.frames, self.temporal_rois, self.norm_rois, self.actor_boxes = self.tube_manager.new_tube_data()
+            self.my_lock.release()
+
             self.can_output = True
             return
         
@@ -117,9 +124,15 @@ class TubeManager:
                 temporal_rois_output = self.temporal_rois
                 norm_rois_output = self.norm_rois
                 actor_boxes_output = self.actor_boxes
+                print(frames_output.nbytes)
+                print(temporal_rois_output.nbytes)
+                print(norm_rois_output.nbytes)
+                print(sys.getsizeof(actor_boxes_output))
             result = dict()
             result['frames_output'] = frames_output
             result['temporal_rois_output'] = temporal_rois_output
             result['norm_rois_output'] = norm_rois_output
             result['actor_boxes_output'] = actor_boxes_output
+            # print("[TubeManager] size of result = %s" % str(sys.getsizeof(result)))
+            # print(sys.getsizeof(frames_output))
             return result

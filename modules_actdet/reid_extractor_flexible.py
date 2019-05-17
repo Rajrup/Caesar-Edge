@@ -91,6 +91,11 @@ class FeatureExtractor:
         if (grpc_flag):
             features_output = pickle.dumps(self.features) # @@@ There might be huge overhead here...
 
+            try:
+                self.request_input
+            except AttributeError:
+                self.request_input = cv2.imencode('.jpg', self.image)[1].tostring()
+                
             next_request = predict_pb2.PredictRequest()
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
@@ -104,4 +109,5 @@ class FeatureExtractor:
             result['client_input'] = self.image
             result['objdet_output'] = self.objdet_output
             result['reid_output'] = self.features
+            # print("[Reid] size of result = %s" % str(sys.getsizeof(result)))
             return result

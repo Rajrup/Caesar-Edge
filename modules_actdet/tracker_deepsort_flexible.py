@@ -6,6 +6,7 @@ import pickle
 from time import time 
 from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
+import cv2
 
 import tensorflow as tf
 from tensorflow.python.framework import tensor_util
@@ -45,8 +46,9 @@ class DeepSort:
     def Setup():
         pass
 
-    def PreProcess(self, request_input, istub, tracker, grpc_flag):
+    def PreProcess(self, request_input, istub, tracker, my_lock, grpc_flag):
         self.tracker = tracker
+        self.my_lock = my_lock
         self.istub = istub
 
         if (grpc_flag):
@@ -73,8 +75,10 @@ class DeepSort:
     def Apply(self):
         detection_list = [Detection(self.ds_boxes[i], self.scores[i], self.features[i]) for i in xrange(len(self.ds_boxes))]
 
+        self.my_lock.acquire()
         self.tracker.predict()
         self.tracker.update(detection_list)
+        self.my_lock.release()
 
     def PostProcess(self, grpc_flag):
         output = ""
@@ -89,6 +93,12 @@ class DeepSort:
         output = output.replace("--", "-") # weird bug...
 
         if (grpc_flag):
+            # if (self.request_input is None):
+            try:
+                self.request_input
+            except AttributeError:
+                self.request_input = cv2.imencode('.jpg', self.image)[1].tostring()
+                
             next_request = predict_pb2.PredictRequest()
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
@@ -99,4 +109,5 @@ class DeepSort:
             result = dict()
             result['client_input'] = self.image
             result['deepsort_output'] = output
+            # print("[tracker] size of result = %s" % str(sys.getsizeof(result)))
             return result

@@ -126,6 +126,11 @@ class SSD:
         output = output[:-1]
 
         if (grpc_flag):
+            try:
+                self.request_input
+            except AttributeError:
+                self.request_input = cv2.imencode('.jpg', self.image)[1].tostring()
+                
             next_request = predict_pb2.PredictRequest()
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
@@ -136,4 +141,7 @@ class SSD:
             result = dict()
             result['client_input'] = self.image
             result['objdet_output'] = output
+            # print(sys.getsizeof(self.image))
+            # print(sys.getsizeof(output))
+            # print(self.image.shape)
             return result

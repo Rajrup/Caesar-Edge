@@ -27,8 +27,8 @@ reader.Setup("/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/i
 ssd = SSD()
 ssd.Setup()
 
-# yolo = YOLO()
-# yolo.Setup()
+yolo = YOLO()
+yolo.Setup()
 
 object_detector = ssd
 
@@ -71,8 +71,8 @@ route_table = simple_route_table
 sess_id = "chain_actdet-000"
 frame_id = -1
 
-# while (frame_id < 32):
-while (True):
+while (frame_id < 48):
+# while (True):
   frame_id += 1
   frame_info = "%s-%s" % (sess_id, frame_id)
 
@@ -93,6 +93,8 @@ while (True):
 
     if (current_model == "SSD"):
       module_instance = ssd
+    elif (current_model == "YOLO"):
+      module_instance = yolo
     elif (current_model == "FeatureExtractor"):
       module_instance = feature_extractor
     elif (current_model == "DeepSort"):

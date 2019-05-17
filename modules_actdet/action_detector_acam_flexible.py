@@ -133,4 +133,5 @@ class ACAM:
         else:
             result = dict()
             result["FINAL"] = output
+            # print("[FINAL] size of result = %s" % str(sys.getsizeof(result)))
             return result

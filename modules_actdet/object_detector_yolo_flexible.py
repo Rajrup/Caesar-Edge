@@ -8,6 +8,7 @@ from modules_actdet.data_writer import DataWriter
 from os.path import join 
 import os 
 import cv2
+import sys
 
 # # Yitao-TLS-Begin
 import grpc
@@ -77,6 +78,11 @@ class YOLO:
         output = output[:-1]
         
         if (grpc_flag):
+            try:
+                self.request_input
+            except AttributeError:
+                self.request_input = cv2.imencode('.jpg', self.image)[1].tostring()
+                
             next_request = predict_pb2.PredictRequest()
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
@@ -87,4 +93,5 @@ class YOLO:
             result = dict()
             result['client_input'] = self.image
             result['objdet_output'] = output
+            # print("[YOLO] size of result = %s" % str(sys.getsizeof(result)))
             return result
