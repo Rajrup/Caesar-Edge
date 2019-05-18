@@ -2,7 +2,7 @@
 from darkflow.net.build import TFNet
 import numpy as np
 import tensorflow as tf
-from time import time 
+import time
 from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
 from os.path import join 
@@ -62,11 +62,16 @@ class YOLO:
         else:
             self.image = request_input['client_input']
 
+        # print("[%.6f] debug" % time.time())
+        # self.start = time.time()
+
         self.istub = istub
 
     def Apply(self):
+        # self.start = time.time()
+        # print("[@@@] dtype = %s, shape = %s" % (self.image.dtype, str(self.image.shape)))
         self.dets = YOLO.tfnet.return_predict(self.image, self.istub)
-        
+        # print("[@@@] This duration = %s" % str(time.time() - self.start))
 
     def PostProcess(self, grpc_flag):
         output = ""
@@ -76,6 +81,8 @@ class YOLO:
             output += "%s|%s|%s|%s|%s|%s-" % (str(d['topleft']['x']), str(d['topleft']['y']), str(d['bottomright']['x']), str(d['bottomright']['y']), str(d['confidence']), str(d['label']))
 
         output = output[:-1]
+
+        # print("[@@@] This duration = %s" % str(time.time() - self.start))
         
         if (grpc_flag):
             try:
