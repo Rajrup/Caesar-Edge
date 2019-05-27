@@ -78,6 +78,7 @@ class TubeManager:
         self.can_output = False
 
     def Apply(self):
+        # if (self.frame_id % 32 != 0 or self.frame_id < TubeManager.cache_size):
         if (self.frame_id % TubeManager.action_freq != 0 or self.frame_id < TubeManager.cache_size):
             return
         elif (not self.tube_manager.has_new_tube()):
