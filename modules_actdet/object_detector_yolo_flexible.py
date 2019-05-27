@@ -73,17 +73,15 @@ class YOLO:
         self.dets = YOLO.tfnet.return_predict(self.image, self.istub)
         # print("[@@@] This duration = %s" % str(time.time() - self.start))
 
-    def PostProcess(self, grpc_flag):
         output = ""
         for d in self.dets:
             if d['label'] != YOLO_PEOPLE_LABEL:
                 continue
             output += "%s|%s|%s|%s|%s|%s-" % (str(d['topleft']['x']), str(d['topleft']['y']), str(d['bottomright']['x']), str(d['bottomright']['y']), str(d['confidence']), str(d['label']))
 
-        output = output[:-1]
+        self.output = output[:-1]
 
-        # print("[@@@] This duration = %s" % str(time.time() - self.start))
-        
+    def PostProcess(self, grpc_flag):        
         if (grpc_flag):
             try:
                 self.request_input
@@ -94,11 +92,10 @@ class YOLO:
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
             next_request.inputs['objdet_output'].CopyFrom(
-              tf.make_tensor_proto(output))
+              tf.make_tensor_proto(self.output))
             return next_request
         else:
             result = dict()
             result['client_input'] = self.image
-            result['objdet_output'] = output
-            # print("[YOLO] size of result = %s" % str(sys.getsizeof(result)))
+            result['objdet_output'] = self.output
             return result

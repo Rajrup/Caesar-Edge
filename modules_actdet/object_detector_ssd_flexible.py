@@ -110,8 +110,6 @@ class SSD:
                                                                         self.rbboxes, nms_threshold=SSD.nms_thres)
         self.rbboxes = np_methods.bboxes_resize(rbbox_img, self.rbboxes)
 
-
-    def PostProcess(self, grpc_flag):
         output = ""
         shape = self.image.shape
 
@@ -123,8 +121,9 @@ class SSD:
             p2 = (int(bbox[2] * shape[0]), int(bbox[3] * shape[1]))
             output += "%s|%s|%s|%s|%s|%s-" % (str(p1[0]), str(p1[1]), str(p2[0]), str(p2[1]), str(self.rscores[i]), str(self.rclasses[i]))
 
-        output = output[:-1]
+        self.output = output[:-1]
 
+    def PostProcess(self, grpc_flag):
         if (grpc_flag):
             try:
                 self.request_input
@@ -135,13 +134,10 @@ class SSD:
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
             next_request.inputs['objdet_output'].CopyFrom(
-              tf.make_tensor_proto(output))
+              tf.make_tensor_proto(self.output))
             return next_request
         else:
             result = dict()
             result['client_input'] = self.image
-            result['objdet_output'] = output
-            # print(sys.getsizeof(self.image))
-            # print(sys.getsizeof(output))
-            # print(self.image.shape)
+            result['objdet_output'] = self.output
             return result

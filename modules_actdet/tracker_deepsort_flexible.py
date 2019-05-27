@@ -80,7 +80,6 @@ class DeepSort:
         self.tracker.update(detection_list)
         self.my_lock.release()
 
-    def PostProcess(self, grpc_flag):
         output = ""
         for tk in self.tracker.tracks:
             if not tk.is_confirmed() or tk.time_since_update > 1:
@@ -90,8 +89,9 @@ class DeepSort:
             output += "%s|%s|%s|%s|%s-" % (str(left), str(top), str(width), str(height), str(track_id))
 
         output = output[:-1]
-        output = output.replace("--", "-") # weird bug...
+        self.output = output.replace("--", "-") # weird bug...
 
+    def PostProcess(self, grpc_flag):
         if (grpc_flag):
             # if (self.request_input is None):
             try:
@@ -103,11 +103,11 @@ class DeepSort:
             next_request.inputs['client_input'].CopyFrom(
               tf.make_tensor_proto(self.request_input))
             next_request.inputs['deepsort_output'].CopyFrom(
-              tf.make_tensor_proto(output))
+              tf.make_tensor_proto(self.output))
             return next_request
         else:
             result = dict()
             result['client_input'] = self.image
-            result['deepsort_output'] = output
+            result['deepsort_output'] = self.output
             # print("[tracker] size of result = %s" % str(sys.getsizeof(result)))
             return result

@@ -124,10 +124,10 @@ class TubeManager:
                 temporal_rois_output = self.temporal_rois
                 norm_rois_output = self.norm_rois
                 actor_boxes_output = self.actor_boxes
-                print(frames_output.nbytes)
-                print(temporal_rois_output.nbytes)
-                print(norm_rois_output.nbytes)
-                print(sys.getsizeof(actor_boxes_output))
+                # print(frames_output.nbytes)
+                # print(temporal_rois_output.nbytes)
+                # print(norm_rois_output.nbytes)
+                # print(sys.getsizeof(actor_boxes_output))
             result = dict()
             result['frames_output'] = frames_output
             result['temporal_rois_output'] = temporal_rois_output

@@ -103,8 +103,7 @@ class ACAM:
 
             self.internal_result = self.istub.Predict(self.internal_request, 10.0)
             self.probs = tensor_util.MakeNdarray(self.internal_result.outputs['output'])
-        
-    def PostProcess(self, grpc_flag):
+    
         if (not len(self.probs)):
             abstr = "None"
             resstr = "None"
@@ -123,15 +122,16 @@ class ACAM:
                 resstr += '-'
             resstr = resstr[:-1]
 
-        output = "%s@%s" % (abstr, resstr)
+        self.output = "%s@%s" % (abstr, resstr)
 
+    def PostProcess(self, grpc_flag):
         if (grpc_flag):
             next_request = predict_pb2.PredictRequest()
             next_request.inputs['FINAL'].CopyFrom(
-              tf.make_tensor_proto(output))
+              tf.make_tensor_proto(self.output))
             return next_request
         else:
             result = dict()
-            result["FINAL"] = output
+            result["FINAL"] = self.output
             # print("[FINAL] size of result = %s" % str(sys.getsizeof(result)))
             return result
