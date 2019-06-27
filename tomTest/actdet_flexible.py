@@ -1,6 +1,7 @@
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+import threading
 import grpc
 from tensorflow_serving.apis import prediction_service_pb2_grpc
 
@@ -61,7 +62,7 @@ my_tracker = Tracker(metric, max_iou_distance=0.7, max_age=200, n_init=4)
 
 my_tube_manager = TManager(cache_size=TubeManager.cache_size, min_tube_len=TubeManager.action_freq)
 
-
+my_lock = threading.Lock()
 
 
 # simple_route_table = "SSD-FeatureExtractor-DeepSort"
@@ -69,11 +70,11 @@ simple_route_table = "SSD-FeatureExtractor-DeepSort-TubeManager-ACAM"
 route_table = simple_route_table
 
 sess_id = "chain_actdet-000"
-frame_id = -1
+frame_id = 0
 
-while (frame_id < 48):
+while (frame_id < 160):
 # while (True):
-  frame_id += 1
+  
   frame_info = "%s-%s" % (sess_id, frame_id)
 
   route_index = 0
@@ -105,9 +106,9 @@ while (frame_id < 48):
       module_instance = action_detector
 
     if (current_model == "DeepSort"):
-      module_instance.PreProcess(request_input = request_input, istub = istub, tracker = my_tracker, grpc_flag = False)
+      module_instance.PreProcess(request_input = request_input, istub = istub, tracker = my_tracker, my_lock = my_lock, grpc_flag = False)
     elif (current_model == "TubeManager"):
-      module_instance.PreProcess(request_input = request_input, istub = istub, tube_manager = my_tube_manager, grpc_flag = False)
+      module_instance.PreProcess(request_input = request_input, istub = istub, tube_manager = my_tube_manager, my_lock = my_lock, grpc_flag = False)
     else:
       module_instance.PreProcess(request_input = request_input, istub = istub, grpc_flag = False)
     module_instance.Apply()
@@ -129,44 +130,4 @@ while (frame_id < 48):
 
 
 
-
-# frame_id = -1
-# while (frame_id < 10):
-#   frame_id += 1
-
-#   # Read input
-#   frame_data = reader.PostProcess()
-#   if not frame_data:  # end of video 
-#     break 
-
-#   # Obj detection module
-#   object_detector.PreProcess(request_input = frame_data, istub = istub, grpc_flag = False)
-#   object_detector.Apply()
-#   obj_det_data = object_detector.PostProcess(grpc_flag = False)
-
-#   # print(obj_det_data)
-#   # break
-
-#   # Tracking module
-#   feature_extractor.PreProcess(request_input = obj_det_data, istub = istub, grpc_flag = False)
-#   feature_extractor.Apply()
-#   feature_data = feature_extractor.PostProcess(grpc_flag = False)
-
-#   # print(feature_data['reid_output'])
-#   # break
-
-#   tracker.PreProcess(request_input = feature_data, istub = istub, tracker = my_tracker, grpc_flag = False)
-#   tracker.Apply()
-#   track_data = tracker.PostProcess(grpc_flag = False)
-
-#   # print(track_data['deepsort_output'])
-
-#   # Action detection module 
-#   tube_manager.PreProcess(track_data)
-#   tube_manager.Apply()
-#   tube_data = tube_manager.PostProcess()
-
-#   if ('meta' in tube_data):
-#     print(tube_data['meta']['obj']['temporal_rois'])
-#   else:
-#     print(tube_data)
+  frame_id += 1
