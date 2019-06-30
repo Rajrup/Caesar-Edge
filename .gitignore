@@ -9,3 +9,4 @@ models/actdet_yolo/*
 out-*
 pickle_tmp/*
 models.tar.gz
+checkpoints.tar.gz
