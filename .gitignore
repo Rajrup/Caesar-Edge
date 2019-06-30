@@ -1,5 +1,4 @@
 checkpoints/*
-indoor_two_ppl.avi
 */*.pyc
 modules_actdet/acam/*.pyc
 models/actdet_ssd/*
