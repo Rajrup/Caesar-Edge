@@ -2,9 +2,10 @@ checkpoints/*
 indoor_two_ppl.avi
 */*.pyc
 modules_actdet/acam/*.pyc
-actdet_ssd/*
-actdet_reid/*
-actdet_acam/*
-actdet_yolo/*
+models/actdet_ssd/*
+models/actdet_reid/*
+models/actdet_acam/*
+models/actdet_yolo/*
 out-*
 pickle_tmp/*
+models.tar.gz
