@@ -81,8 +81,8 @@ class TubeManager:
         # if (self.frame_id % 32 != 0 or self.frame_id < TubeManager.cache_size):
         if (self.frame_id % TubeManager.action_freq != 0 or self.frame_id < TubeManager.cache_size):
             return
-        elif (not self.tube_manager.has_new_tube()):
-            return
+        # elif (not self.tube_manager.has_new_tube()):
+        #     return
         else:
             self.my_lock.acquire()
             self.frames, self.temporal_rois, self.norm_rois, self.actor_boxes = self.tube_manager.new_tube_data()
