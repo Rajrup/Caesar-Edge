@@ -73,7 +73,7 @@ my_lock = threading.Lock()
 
 
 simple_route_table = "SSD-FeatureExtractor-DeepSort-TubeManager-ACAM"
-measure_module = "ACAM"
+measure_module = "TubeManager"
 route_table = simple_route_table
 
 sess_id = "chain_actdet-000"
