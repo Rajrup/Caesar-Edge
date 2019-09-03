@@ -1,6 +1,7 @@
 import tensorflow as tf
 tf.logging.set_verbosity(tf.logging.ERROR)
 
+import time
 import threading
 import grpc
 from tensorflow_serving.apis import prediction_service_pb2_grpc
@@ -74,6 +75,7 @@ frame_id = 0
 
 while (frame_id < 160):
 # while (True):
+  start = time.time()
   
   frame_info = "%s-%s" % (sess_id, frame_id)
 
@@ -128,6 +130,8 @@ while (frame_id < 160):
       if (request_input["FINAL"] != "None@None"):
         print(request_input["FINAL"])
 
-
+  end = time.time()
+  duration = end - start
+  print("Duration = %s" % duration)
 
   frame_id += 1
