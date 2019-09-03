@@ -55,7 +55,7 @@ action_detector = acam
 
 
 
-ichannel = grpc.insecure_channel("localhost:8500")
+ichannel = grpc.insecure_channel("192.168.1.9:8500")
 istub = prediction_service_pb2_grpc.PredictionServiceStub(ichannel)
 
 metric = nn_matching.NearestNeighborDistanceMetric("cosine", 0.2, None)
