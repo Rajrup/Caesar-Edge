@@ -67,6 +67,9 @@ class FeatureExtractor:
 
         self.ds_boxes = []
         self.scores = []
+        # print(self.objdet_output)
+        if (self.objdet_output == ""):
+          self.objdet_output = "284|110|609|719|0.482117|person"
         for b in self.objdet_output.split('-'):
             tmp = b.split('|')
             b0 = int(tmp[0])

@@ -12,6 +12,7 @@ sys.path.append('/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edg
 from modules_actdet.data_reader import DataReader
 from modules_actdet.object_detector_ssd_flexible import SSD
 from modules_actdet.object_detector_yolo_flexible import YOLO
+from modules_actdet.object_detector_yolotiny_flexible import ActDetYoloTiny
 from modules_actdet.reid_extractor_flexible import FeatureExtractor
 from modules_actdet.tracker_deepsort_flexible import DeepSort
 from modules_actdet.tube_manager_flexible import TubeManager
@@ -31,6 +32,9 @@ ssd.Setup()
 
 yolo = YOLO()
 yolo.Setup()
+
+yolotiny = ActDetYoloTiny()
+yolotiny.Setup()
 
 object_detector = ssd
 
@@ -55,7 +59,7 @@ action_detector = acam
 
 
 
-ichannel = grpc.insecure_channel("192.168.1.9:8500")
+ichannel = grpc.insecure_channel("localhost:8500")
 istub = prediction_service_pb2_grpc.PredictionServiceStub(ichannel)
 
 metric = nn_matching.NearestNeighborDistanceMetric("cosine", 0.2, None)
@@ -98,6 +102,8 @@ while (frame_id < 160):
       module_instance = ssd
     elif (current_model == "YOLO"):
       module_instance = yolo
+    elif (current_model == "ActDetYoloTiny"):
+      module_instance = yolotiny
     elif (current_model == "FeatureExtractor"):
       module_instance = feature_extractor
     elif (current_model == "DeepSort"):

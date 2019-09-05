@@ -21,7 +21,8 @@ from tensorflow.python.framework import tensor_util
 # Place your downloaded cfg and weights under "checkpoints/"
 YOLO_CONFIG = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/cfg'
 YOLO_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/cfg/yolo.cfg'
-YOLO_WEIGHTS = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/yolo/yolo.weights'
+# YOLO_WEIGHTS = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/yolo/yolo.weights'
+YOLO_WEIGHTS = '/home/yitao/Downloads/tmp/docker-share/module_actdet/checkpoints/yolo/yolo.weights'
 
 GPU_ID = 0
 GPU_UTIL = 0.5
@@ -70,7 +71,7 @@ class YOLO:
     def Apply(self):
         # self.start = time.time()
         # print("[@@@] dtype = %s, shape = %s" % (self.image.dtype, str(self.image.shape)))
-        self.dets = YOLO.tfnet.return_predict(self.image, self.istub)
+        self.dets = YOLO.tfnet.return_predict(self.image, "actdet_yolo", self.istub)
         # print("[@@@] This duration = %s" % str(time.time() - self.start))
 
         output = ""

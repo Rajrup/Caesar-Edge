@@ -1,4 +1,3 @@
-checkpoints/*
 */*.pyc
 modules_actdet/acam/*.pyc
 models/actdet_ssd/*
@@ -9,3 +8,7 @@ out-*
 pickle_tmp/*
 models.tar.gz
 checkpoints.tar.gz
+models/*
+models
+checkpoints/*
+checkpoints
