@@ -5,6 +5,7 @@ models/actdet_reid/*
 models/actdet_acam/*
 models/actdet_yolo/*
 out-*
+pickle_tmp
 pickle_tmp/*
 models.tar.gz
 checkpoints.tar.gz
