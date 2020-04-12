@@ -71,11 +71,14 @@ my_lock = threading.Lock()
 
 
 # simple_route_table = "SSD-FeatureExtractor-DeepSort"
-simple_route_table = "SSD-FeatureExtractor-DeepSort-TubeManager-ACAM"
+simple_route_table = "YOLO-FeatureExtractor-DeepSort"
 route_table = simple_route_table
 
 sess_id = "chain_actdet-000"
 frame_id = 0
+
+total = 0.0
+count = 0
 
 while (frame_id < 160):
 # while (True):
@@ -128,16 +131,21 @@ while (frame_id < 160):
 
     request_input = next_request
 
-    # if (current_model == "DeepSort"):
-      # print(request_input["deepsort_output"])
-    # if (current_model == "TubeManager"):
-      # print(request_input["temporal_rois_output"])
-    if (current_model == "ACAM"):
-      if (request_input["FINAL"] != "None@None"):
-        print(request_input["FINAL"])
+    # # if (current_model == "DeepSort"):
+    #   # print(request_input["deepsort_output"])
+    # # if (current_model == "TubeManager"):
+    #   # print(request_input["temporal_rois_output"])
+    # if (current_model == "ACAM"):
+    #   if (request_input["FINAL"] != "None@None"):
+    #     print(request_input["FINAL"])
 
   end = time.time()
   duration = end - start
   print("Duration = %s" % duration)
+  if (frame_id > 5):
+    count += 1
+    total += duration
 
   frame_id += 1
+
+print("on average, it takes %f sec per frame" % (total / count))
