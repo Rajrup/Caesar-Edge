@@ -71,7 +71,7 @@ my_lock = threading.Lock()
 
 
 # simple_route_table = "SSD-FeatureExtractor-DeepSort"
-simple_route_table = "YOLO-FeatureExtractor-DeepSort"
+simple_route_table = "YOLO-FeatureExtractor-DeepSort-TubeManager-ACAM"
 route_table = simple_route_table
 
 sess_id = "chain_actdet-000"
@@ -135,9 +135,9 @@ while (frame_id < 160):
     #   # print(request_input["deepsort_output"])
     # # if (current_model == "TubeManager"):
     #   # print(request_input["temporal_rois_output"])
-    # if (current_model == "ACAM"):
-    #   if (request_input["FINAL"] != "None@None"):
-    #     print(request_input["FINAL"])
+    if (current_model == "ACAM"):
+      if (request_input["FINAL"] != "None@None"):
+        print(request_input["FINAL"])
 
   end = time.time()
   duration = end - start
