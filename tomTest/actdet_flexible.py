@@ -17,6 +17,7 @@ from modules_actdet.reid_extractor_flexible import FeatureExtractor
 from modules_actdet.tracker_deepsort_flexible import DeepSort
 from modules_actdet.tube_manager_flexible import TubeManager
 from modules_actdet.action_detector_acam_flexible import ACAM
+from modules_actdet.object_detector_ssd_inception_flexible import ActDetInception
 
 from deep_sort.tracker import Tracker
 from deep_sort import nn_matching 
@@ -36,7 +37,10 @@ yolo.Setup()
 yolotiny = ActDetYoloTiny()
 yolotiny.Setup()
 
-object_detector = ssd
+inception = ActDetInception()
+inception.Setup()
+
+# object_detector = ssd
 
 # # ============ Tracking Modules ============
 feature_extractor = FeatureExtractor()
@@ -45,7 +49,7 @@ feature_extractor.Setup()
 deepsort = DeepSort()
 deepsort.Setup()
 
-tracker = deepsort
+# tracker = deepsort
 
 # ============ Action Detection Modules ============
 tube_manager = TubeManager()
@@ -54,7 +58,7 @@ tube_manager.Setup()
 acam = ACAM()
 acam.Setup()
 
-action_detector = acam
+# action_detector = acam
 
 
 
@@ -71,7 +75,8 @@ my_lock = threading.Lock()
 
 
 # simple_route_table = "SSD-FeatureExtractor-DeepSort"
-simple_route_table = "YOLO-FeatureExtractor-DeepSort-TubeManager-ACAM"
+# simple_route_table = "YOLO-FeatureExtractor-DeepSort-TubeManager-ACAM"
+simple_route_table = "ActDetInception-FeatureExtractor-DeepSort-TubeManager-ACAM"
 route_table = simple_route_table
 
 sess_id = "chain_actdet-000"
@@ -114,7 +119,9 @@ while (frame_id < 160):
     elif (current_model == "TubeManager"):
       module_instance = tube_manager
     elif (current_model == "ACAM"):
-      module_instance = action_detector
+      module_instance = acam
+    elif (current_model == "ActDetInception"):
+      module_instance = inception
 
     if (current_model == "DeepSort"):
       module_instance.PreProcess(request_input = request_input, istub = istub, tracker = my_tracker, my_lock = my_lock, grpc_flag = False)
@@ -139,9 +146,13 @@ while (frame_id < 160):
       if (request_input["FINAL"] != "None@None"):
         print(request_input["FINAL"])
 
+    # if (current_model == "YOLO" or current_model == "ActDetInception"):
+    #   print(request_input["objdet_output"])
+    #   break
+
   end = time.time()
   duration = end - start
-  print("Duration = %s" % duration)
+  # print("Duration = %s" % duration)
   if (frame_id > 5):
     count += 1
     total += duration
