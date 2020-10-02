@@ -5,11 +5,12 @@ import tensorflow as tf
 import sys
 import os
 sys.path.append("%s/modules_actdet/deep_sort" % os.environ['CAESAR_EDGE_PATH'])
-from tools.generate_detections_serving import create_box_encoder
+from deep_sort.detection import Detection
+from deep_sort.tracker import Tracker
 
-# import pickle
+import pickle
 
-class FeatureExtractor:
+class DeepSort:
 
   # initialize static variable here
   @staticmethod
@@ -27,7 +28,7 @@ class FeatureExtractor:
     # do the conversion for each key in predict_pb2.PredictRequest()
     raw_image = tensor_util.MakeNdarray(request.inputs["raw_image"]) 
     objdet_output = str(tensor_util.MakeNdarray(request.inputs["objdet_output"]))
-    # print("[Debug] objdet_output = %s" % objdet_output)
+    features = pickle.loads(str(tensor_util.MakeNdarray(request.inputs["features"])))
 
     ds_boxes = []
     scores = []
@@ -45,7 +46,7 @@ class FeatureExtractor:
     data_dict["ds_boxes"] = ds_boxes
     data_dict["scores"] = scores
     data_dict["raw_image"] = raw_image
-    data_dict["objdet_output"] = objdet_output
+    data_dict["features"] = features
 
     return data_dict
 
@@ -73,9 +74,9 @@ class FeatureExtractor:
       for data in data_array:
         batched_data_dict["raw_image"].append(data["raw_image"])
 
-      batched_data_dict["objdet_output"] = []
+      batched_data_dict["features"] = []
       for data in data_array:
-        batched_data_dict["objdet_output"].append(data["objdet_output"])
+        batched_data_dict["features"].append(data["features"])
 
       return batched_data_dict
 
@@ -88,14 +89,12 @@ class FeatureExtractor:
     else:
       batched_result_dict = dict()
 
-      # assume no batching for reid_extractor (GPU)
+      # assume no batching for deepsort (CPU)
       # To-do: should we enable batching?
-      encoder = create_box_encoder(istub, batch_size = 16)
-      features = encoder(batched_data_dict["raw_image"][0], batched_data_dict["ds_boxes"][0])
+      detection_list = [Detection(batched_data_dict["ds_boxes"][0][i], batched_data_dict["scores"][0][i], batched_data_dict["features"][0][i]) for i in xrange(len(batched_data_dict["ds_boxes"][0]))]
 
-      batched_result_dict["features"] = [features]
+      batched_result_dict["detection_list"] = [detection_list]
       batched_result_dict["raw_image"] = batched_data_dict["raw_image"]
-      batched_result_dict["objdet_output"] = batched_data_dict["objdet_output"]
 
       return batched_result_dict
 
@@ -110,9 +109,8 @@ class FeatureExtractor:
 
       for i in range(batch_size):
         my_dict = dict()
-        my_dict["features"] = [batched_result_dict["features"][i]]
+        my_dict["detection_list"] = [batched_result_dict["detection_list"][i]]
         my_dict["raw_image"] = [batched_result_dict["raw_image"][i]]
-        my_dict["objdet_output"] = [batched_result_dict["objdet_output"][i]]
         batched_result_array.append(my_dict)
 
       return batched_result_array
@@ -122,20 +120,16 @@ class FeatureExtractor:
   def GetResultList(self, result_dict):
     result_list = []
     for i in range(len(result_dict[result_dict.keys()[0]])):
-      result_list.append({"features": result_dict["features"][i], "raw_image": result_dict["raw_image"][i], "objdet_output": result_dict["objdet_output"][i]})
+      result_list.append({"detection_list": result_dict["detection_list"][i], "raw_image": result_dict["raw_image"][i]})
+
     return result_list
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
   def GetNextRequest(self, result):
-    # print(result["features"])
     next_request = predict_pb2.PredictRequest()
     next_request.inputs['raw_image'].CopyFrom(
       tf.make_tensor_proto(result["raw_image"]))
-    next_request.inputs["objdet_output"].CopyFrom(
-      tf.make_tensor_proto(result["objdet_output"]))
-    # next_request.inputs["features"].CopyFrom(
-    #   tf.make_tensor_proto(pickle.dumps(result["features"])))
-    next_request.inputs["features"].CopyFrom(
-      tf.make_tensor_proto(result["features"]))
+    next_request.inputs['detection_list'].CopyFrom(
+      tf.make_tensor_proto(pickle.dumps(result["detection_list"])))
     return next_request

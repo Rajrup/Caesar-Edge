@@ -75,17 +75,24 @@ class DeepSort:
     def Apply(self):
         detection_list = [Detection(self.ds_boxes[i], self.scores[i], self.features[i]) for i in xrange(len(self.ds_boxes))]
 
+        # for detection in detection_list:
+        #     print("tlwh = %s, confidence = %s" % (detection.tlwh, detection.confidence))
+
         self.my_lock.acquire()
         self.tracker.predict()
         self.tracker.update(detection_list)
         self.my_lock.release()
 
+        # print(len(self.tracker.tracks))
+
         output = ""
         for tk in self.tracker.tracks:
+            # print("tk.is_confirmed() = %s, tk.time_since_update = %s" % (tk.is_confirmed(), tk.time_since_update))
             if not tk.is_confirmed() or tk.time_since_update > 1:
                 continue
             left, top, width, height = map(int, tk.to_tlwh())
             track_id = tk.track_id
+            # print("%s|%s|%s|%s|%s-" % (str(left), str(top), str(width), str(height), str(track_id)))
             output += "%s|%s|%s|%s|%s-" % (str(left), str(top), str(width), str(height), str(track_id))
 
         output = output[:-1]

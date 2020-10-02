@@ -85,11 +85,12 @@ frame_id = 0
 total = 0.0
 count = 0
 
-while (frame_id < 160):
+while (frame_id < 64):
 # while (True):
   start = time.time()
   
   frame_info = "%s-%s" % (sess_id, frame_id)
+  print(frame_info)
 
   route_index = 0
 
@@ -149,6 +150,18 @@ while (frame_id < 160):
     # if (current_model == "YOLO" or current_model == "ActDetInception"):
     #   print(request_input["objdet_output"])
     #   break
+
+    # if (current_model == "FeatureExtractor"):
+    #   print(request_input["reid_output"])
+    #   break
+
+    # if (current_model == "DeepSort"):
+    #   print(request_input["deepsort_output"])
+    #   break
+
+    if (current_model == "TubeManager"):
+      print(request_input["actor_boxes_output"])
+      break
 
   end = time.time()
   duration = end - start
