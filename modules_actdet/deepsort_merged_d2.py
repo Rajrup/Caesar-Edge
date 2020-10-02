@@ -136,13 +136,15 @@ class DeepSort:
   def GetResultList(self, result_dict):
     result_list = []
     for i in range(len(result_dict[result_dict.keys()[0]])):
-      result_list.append({"deepsort_output": result_dict["deepsort_output"][i], "raw_image": result_dict["deepsort_output"][i]})
+      result_list.append({"deepsort_output": result_dict["deepsort_output"][i], "raw_image": result_dict["raw_image"][i]})
     return result_list
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
   def GetNextRequest(self, result):
     # print(result["deepsort_output"])
+    # print(result["raw_image"])
+
     next_request = predict_pb2.PredictRequest()
     next_request.inputs['raw_image'].CopyFrom(
       tf.make_tensor_proto(result["raw_image"]))

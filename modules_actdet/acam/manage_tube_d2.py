@@ -111,7 +111,8 @@ class TManager:
         frames = np.expand_dims(np.stack(list(self.frames), axis=0), axis=0)
         norm_roi, temporal_roi = self.get_roi()
         # actor_boxes = [{'box':[self.tubes[i][-1]['box']], 'tid':i} for i in self.active_actors]
-        actor_boxes = ["%s-%s" % (str(self.tubes[i][-1]['box']), str(i)) for i in self.active_actors]
+        # actor_boxes = ["%s-%s" % (str(self.tubes[i][-1]['box']), str(i)) for i in self.active_actors]
+        actor_boxes = ["%s|%s|%s|%s|%s" % (self.tubes[i][-1]['box'][0], self.tubes[i][-1]['box'][1], self.tubes[i][-1]['box'][2], self.tubes[i][-1]['box'][3], i) for i in self.active_actors]
 
         return frames, temporal_roi, norm_roi, actor_boxes
 

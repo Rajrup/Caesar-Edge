@@ -129,6 +129,7 @@ class FeatureExtractor:
   # output: next_request["boudning_boxes"] = bb1_in_image1
   def GetNextRequest(self, result):
     # print(result["features"])
+
     next_request = predict_pb2.PredictRequest()
     next_request.inputs['raw_image'].CopyFrom(
       tf.make_tensor_proto(result["raw_image"]))
