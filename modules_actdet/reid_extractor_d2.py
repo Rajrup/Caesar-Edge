@@ -21,12 +21,16 @@ class FeatureExtractor:
   #        request["meta"] = meta
   # output: data_dict["image"] = image
   #         data_dict["meta"] = meta
-  def GetDataDict(self, request):
+  def GetDataDict(self, request, grpc_flag):
     data_dict = dict()
 
     # do the conversion for each key in predict_pb2.PredictRequest()
-    raw_image = tensor_util.MakeNdarray(request.inputs["raw_image"]) 
-    objdet_output = str(tensor_util.MakeNdarray(request.inputs["objdet_output"]))
+    if (grpc_flag):
+      raw_image = tensor_util.MakeNdarray(request.inputs["raw_image"]) 
+      objdet_output = str(tensor_util.MakeNdarray(request.inputs["objdet_output"]))
+    else:
+      raw_image = request["raw_image"]
+      objdet_output = str(request["objdet_output"])
     # print("[Debug] objdet_output = %s" % objdet_output)
 
     ds_boxes = []
@@ -127,16 +131,21 @@ class FeatureExtractor:
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
-  def GetNextRequest(self, result):
+  def GetNextRequest(self, result, grpc_flag):
     # print(result["features"])
-
-    next_request = predict_pb2.PredictRequest()
-    next_request.inputs['raw_image'].CopyFrom(
-      tf.make_tensor_proto(result["raw_image"]))
-    next_request.inputs["objdet_output"].CopyFrom(
-      tf.make_tensor_proto(result["objdet_output"]))
-    # next_request.inputs["features"].CopyFrom(
-    #   tf.make_tensor_proto(pickle.dumps(result["features"])))
-    next_request.inputs["features"].CopyFrom(
-      tf.make_tensor_proto(result["features"]))
+    if (grpc_flag):
+      next_request = predict_pb2.PredictRequest()
+      next_request.inputs['raw_image'].CopyFrom(
+        tf.make_tensor_proto(result["raw_image"]))
+      next_request.inputs["objdet_output"].CopyFrom(
+        tf.make_tensor_proto(result["objdet_output"]))
+      # next_request.inputs["features"].CopyFrom(
+      #   tf.make_tensor_proto(pickle.dumps(result["features"])))
+      next_request.inputs["features"].CopyFrom(
+        tf.make_tensor_proto(result["features"]))
+    else:
+      next_request = dict()
+      next_request["raw_image"] = result["raw_image"]
+      next_request["objdet_output"] = result["objdet_output"]
+      next_request["features"] = result["features"]
     return next_request

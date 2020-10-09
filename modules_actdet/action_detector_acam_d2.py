@@ -20,14 +20,20 @@ class ACAM:
   #        request["meta"] = meta
   # output: data_dict["image"] = image
   #         data_dict["meta"] = meta
-  def GetDataDict(self, request):
+  def GetDataDict(self, request, grpc_flag):
     data_dict = dict()
 
     # do the conversion for each key in predict_pb2.PredictRequest()
-    frames = tensor_util.MakeNdarray(request.inputs["frames"])
-    temporal_rois = tensor_util.MakeNdarray(request.inputs["temporal_rois"])
-    norm_rois = tensor_util.MakeNdarray(request.inputs["norm_rois"])
-    actor_boxes = tensor_util.MakeNdarray(request.inputs["actor_boxes"])
+    if (grpc_flag):
+      frames = tensor_util.MakeNdarray(request.inputs["frames"])
+      temporal_rois = tensor_util.MakeNdarray(request.inputs["temporal_rois"])
+      norm_rois = tensor_util.MakeNdarray(request.inputs["norm_rois"])
+      actor_boxes = tensor_util.MakeNdarray(request.inputs["actor_boxes"])
+    else:
+      frames = request["frames"]
+      temporal_rois = request["temporal_rois"]
+      norm_rois = request["norm_rois"]
+      actor_boxes = request["actor_boxes"]
 
     data_dict["frames"] = frames
     data_dict["temporal_rois"] = temporal_rois
@@ -149,8 +155,12 @@ class ACAM:
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
-  def GetNextRequest(self, result):
-    next_request = predict_pb2.PredictRequest()
-    next_request.inputs["actdet_output"].CopyFrom(
-      tf.make_tensor_proto(result["actdet_output"]))
+  def GetNextRequest(self, result, grpc_flag):
+    if (grpc_flag):
+      next_request = predict_pb2.PredictRequest()
+      next_request.inputs["actdet_output"].CopyFrom(
+        tf.make_tensor_proto(result["actdet_output"]))
+    else:
+      next_request = dict()
+      next_request["actdet_output"] = result["actdet_output"]
     return next_request

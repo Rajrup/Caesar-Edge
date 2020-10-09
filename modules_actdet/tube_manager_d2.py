@@ -26,13 +26,18 @@ class TubeManager:
   #        request["meta"] = meta
   # output: data_dict["image"] = image
   #         data_dict["meta"] = meta
-  def GetDataDict(self, request):
+  def GetDataDict(self, request, grpc_flag):
     data_dict = dict()
 
     # do the conversion for each key in predict_pb2.PredictRequest()
-    raw_image = tensor_util.MakeNdarray(request.inputs["raw_image"])
-    deepsort_output = str(tensor_util.MakeNdarray(request.inputs["deepsort_output"]))
-    frame_id = int(str(tensor_util.MakeNdarray(request.inputs["frame_info"])).split('-')[-1])
+    if (grpc_flag):
+      raw_image = tensor_util.MakeNdarray(request.inputs["raw_image"])
+      deepsort_output = str(tensor_util.MakeNdarray(request.inputs["deepsort_output"]))
+      frame_id = int(str(tensor_util.MakeNdarray(request.inputs["frame_info"])).split('-')[-1])
+    else:
+      raw_image = request["raw_image"]
+      deepsort_output = str(request["deepsort_output"])
+      frame_id = int(str(request["frame_info"]).split('-')[-1])
 
     tube_input = self.getTubeInput(raw_image, frame_id, deepsort_output)
 
@@ -131,14 +136,21 @@ class TubeManager:
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
-  def GetNextRequest(self, result):
-    next_request = predict_pb2.PredictRequest()
-    next_request.inputs["frames"].CopyFrom(
-      tf.make_tensor_proto(result["frames"]))
-    next_request.inputs["temporal_rois"].CopyFrom(
-      tf.make_tensor_proto(result["temporal_rois"]))
-    next_request.inputs["norm_rois"].CopyFrom(
-      tf.make_tensor_proto(result["norm_rois"]))
-    next_request.inputs["actor_boxes"].CopyFrom(
-      tf.make_tensor_proto(result["actor_boxes"]))
+  def GetNextRequest(self, result, grpc_flag):
+    if (grpc_flag):
+      next_request = predict_pb2.PredictRequest()
+      next_request.inputs["frames"].CopyFrom(
+        tf.make_tensor_proto(result["frames"]))
+      next_request.inputs["temporal_rois"].CopyFrom(
+        tf.make_tensor_proto(result["temporal_rois"]))
+      next_request.inputs["norm_rois"].CopyFrom(
+        tf.make_tensor_proto(result["norm_rois"]))
+      next_request.inputs["actor_boxes"].CopyFrom(
+        tf.make_tensor_proto(result["actor_boxes"]))
+    else:
+      next_request = dict()
+      next_request["frames"] = result["frames"]
+      next_request["temporal_rois"] = result["temporal_rois"]
+      next_request["norm_rois"] = result["norm_rois"]
+      next_request["actor_boxes"] = result["actor_boxes"]
     return next_request

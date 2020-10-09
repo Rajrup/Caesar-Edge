@@ -68,11 +68,15 @@ class ActDetInception:
   #        request["meta"] = meta
   # output: data_dict["image"] = image
   #         data_dict["meta"] = meta
-  def GetDataDict(self, request):
+  def GetDataDict(self, request, grpc_flag):
     data_dict = dict()
 
     # do the conversion for each key in predict_pb2.PredictRequest()
-    raw_image = tensor_util.MakeNdarray(request.inputs["client_input"])
+    if (grpc_flag):
+      raw_image = tensor_util.MakeNdarray(request.inputs["client_input"])
+    else:
+      raw_image = request["client_input"]
+
     image, org = self.decode_image_opencv(raw_image)
     image = image.astype(np.uint8)
     data_dict["client_input"] = image
@@ -194,10 +198,15 @@ class ActDetInception:
 
   # input: result = {"bounding_boxes": bb1_in_image1}
   # output: next_request["boudning_boxes"] = bb1_in_image1
-  def GetNextRequest(self, result):
-    next_request = predict_pb2.PredictRequest()
-    next_request.inputs['raw_image'].CopyFrom(
-      tf.make_tensor_proto(result["raw_image"]))
-    next_request.inputs["objdet_output"].CopyFrom(
-      tf.make_tensor_proto(result["objdet_output"]))
+  def GetNextRequest(self, result, grpc_flag):
+    if (grpc_flag):
+      next_request = predict_pb2.PredictRequest()
+      next_request.inputs['raw_image'].CopyFrom(
+        tf.make_tensor_proto(result["raw_image"]))
+      next_request.inputs["objdet_output"].CopyFrom(
+        tf.make_tensor_proto(result["objdet_output"]))
+    else:
+      next_request = dict()
+      next_request["raw_image"] = result["raw_image"]
+      next_request["objdet_output"] = result["objdet_output"]
     return next_request
