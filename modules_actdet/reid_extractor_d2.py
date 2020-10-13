@@ -2,19 +2,69 @@ from tensorflow_serving.apis import predict_pb2
 from tensorflow.python.framework import tensor_util
 import tensorflow as tf
 
-import sys
-import os
-sys.path.append("%s/modules_actdet/deep_sort" % os.environ['CAESAR_EDGE_PATH'])
-from tools.generate_detections_serving import create_box_encoder
+import numpy as np
+import cv2
+
+# import sys
+# import os
+# sys.path.append("%s/modules_actdet/deep_sort" % os.environ['CAESAR_EDGE_PATH'])
+# from tools.generate_detections_serving import create_box_encoder
 
 # import pickle
+
+def extract_image_patch(image, bbox, patch_shape):
+  """Extract image patch from bounding box.
+
+  Parameters
+  ----------
+  image : ndarray
+      The full image.
+  bbox : array_like
+      The bounding box in format (x, y, width, height).
+  patch_shape : Optional[array_like]
+      This parameter can be used to enforce a desired patch shape
+      (height, width). First, the `bbox` is adapted to the aspect ratio
+      of the patch shape, then it is clipped at the image boundaries.
+      If None, the shape is computed from :arg:`bbox`.
+
+  Returns
+  -------
+  ndarray | NoneType
+      An image patch showing the :arg:`bbox`, optionally reshaped to
+      :arg:`patch_shape`.
+      Returns None if the bounding box is empty or fully outside of the image
+      boundaries.
+
+  """
+  bbox = np.array(bbox)
+  if patch_shape is not None:
+    # correct aspect ratio to patch shape
+    target_aspect = float(patch_shape[1]) / patch_shape[0]
+    new_width = target_aspect * bbox[3]
+    bbox[0] -= (new_width - bbox[2]) / 2
+    bbox[2] = new_width
+
+  # convert to top left, bottom right
+  bbox[2:] += bbox[:2]
+  bbox = bbox.astype(np.int)
+
+  # clip at image boundaries
+  bbox[:2] = np.maximum(0, bbox[:2])
+  bbox[2:] = np.minimum(np.asarray(image.shape[:2][::-1]) - 1, bbox[2:])
+  if np.any(bbox[:2] >= bbox[2:]):
+    return None
+  sx, sy, ex, ey = bbox
+  image = image[sy:ey, sx:ex]
+  image = cv2.resize(image, tuple(patch_shape[::-1]))
+  return image
 
 class FeatureExtractor:
 
   # initialize static variable here
   @staticmethod
   def Setup():
-    pass
+    FeatureExtractor.image_shape = [128, 64, 3]
+    FeatureExtractor.feature_dim = 128
 
   # convert predict_pb2.PredictRequest()'s content to data_dict
   # input: request["image"] = image
@@ -34,7 +84,7 @@ class FeatureExtractor:
     # print("[Debug] objdet_output = %s" % objdet_output)
 
     ds_boxes = []
-    scores = []
+    # scores = []
 
     for b in objdet_output.split('-'):
       tmp = b.split('|')
@@ -44,10 +94,10 @@ class FeatureExtractor:
       b3 = int(tmp[3])
       b4 = float(tmp[4])
       ds_boxes.append([b0, b1, b2 - b0, b3 - b1])
-      scores.append(b4)
+      # scores.append(b4)
 
     data_dict["ds_boxes"] = ds_boxes
-    data_dict["scores"] = scores
+    # data_dict["scores"] = scores
     data_dict["raw_image"] = raw_image
     data_dict["objdet_output"] = objdet_output
 
@@ -69,9 +119,9 @@ class FeatureExtractor:
       for data in data_array:
         batched_data_dict["ds_boxes"].append(data["ds_boxes"])
 
-      batched_data_dict["scores"] = []
-      for data in data_array:
-        batched_data_dict["scores"].append(data["scores"])
+      # batched_data_dict["scores"] = []
+      # for data in data_array:
+      #   batched_data_dict["scores"].append(data["scores"])
 
       batched_data_dict["raw_image"] = []
       for data in data_array:
@@ -92,12 +142,43 @@ class FeatureExtractor:
     else:
       batched_result_dict = dict()
 
-      # assume no batching for reid_extractor (GPU)
-      # To-do: should we enable batching?
-      encoder = create_box_encoder(istub, batch_size = 16)
-      features = encoder(batched_data_dict["raw_image"][0], batched_data_dict["ds_boxes"][0])
+      # enabled batching!
+      image_patches = []
+      patch_num_array = []
+      for i in range(batch_size):
+        for box in batched_data_dict["ds_boxes"][i]:
+          patch = extract_image_patch(batched_data_dict["raw_image"][i], box, FeatureExtractor.image_shape[:2])
+          if patch is None:
+            patch = np.random.uniform(0., 255., image_shape).astype(np.uint8)
+          image_patches.append(patch)
+        patch_num_array.append(len(batched_data_dict["ds_boxes"][i]))
+      image_patches = np.asarray(image_patches)
 
-      batched_result_dict["features"] = [features]
+      # out = np.zeros((len(image_patches), FeatureExtractor.feature_dim), np.float32)
+      # data_len = len(out)
+
+      request = predict_pb2.PredictRequest()
+      request.model_spec.name = 'actdet_reid'
+      request.model_spec.signature_name = 'predict_images'
+      request.inputs['input'].CopyFrom(
+        tf.contrib.util.make_tensor_proto(image_patches, shape = image_patches.shape))
+
+      result = istub.Predict(request, 10.0)
+
+      features = tensor_util.MakeNdarray(result.outputs['output'])
+
+      features_array = []
+      index = 0
+      for patch_num in patch_num_array:
+        features_array.append(features[index:(index + patch_num)])
+        index += patch_num
+
+      # # assume no batching for reid_extractor (GPU)
+      # # To-do: should we enable batching?
+      # encoder = create_box_encoder(istub, batch_size = 16)
+      # features = encoder(batched_data_dict["raw_image"][0], batched_data_dict["ds_boxes"][0])
+
+      batched_result_dict["features"] = features_array
       batched_result_dict["raw_image"] = batched_data_dict["raw_image"]
       batched_result_dict["objdet_output"] = batched_data_dict["objdet_output"]
 

@@ -38,18 +38,18 @@ ichannel = grpc.insecure_channel("localhost:8500")
 istub = prediction_service_pb2_grpc.PredictionServiceStub(ichannel)
 
 # module_name = "actdet_inception"
-# module_name = "actdet_reid"
+module_name = "actdet_reid"
 # module_name = "actdet_deepsort"
 # module_name = "actdet_tubemanager"
-module_name = "actdet_acam"
+# module_name = "actdet_acam"
 
 pickle_directory = "%s/pickle_d2/Caesar-Edge/%s" % (os.environ['RIM_DOCKER_SHARE'], module_name)
 if not os.path.exists(pickle_directory):
   os.makedirs(pickle_directory)
 
-batch_size = 1
+batch_size = 4
 parallel_level = 1
-run_num = 3
+run_num = 1
 
 def runBatch(batch_size, run_num, tid):
   start = time.time()
@@ -81,11 +81,12 @@ def runBatch(batch_size, run_num, tid):
         data_array.append(data_dict)
         frame_id += 1
     elif (module_name == "actdet_reid"):
-      pickle_input = "%s/%s" % ("%s/pickle_d2/%s/%s" % (os.environ['RIM_DOCKER_SHARE'], "Caesar-Edge", "actdet_inception"), str(frame_id + 1).zfill(3))
-      request = pickle.load(open(pickle_input))
-      data_dict = module_instance.GetDataDict(request, grpc_flag = False)
-      data_array.append(data_dict)
-      frame_id += 1
+      for i in range(batch_size):
+        pickle_input = "%s/%s" % ("%s/pickle_d2/%s/%s" % (os.environ['RIM_DOCKER_SHARE'], "Caesar-Edge", "actdet_inception"), str(frame_id + 1).zfill(3))
+        request = pickle.load(open(pickle_input))
+        data_dict = module_instance.GetDataDict(request, grpc_flag = False)
+        data_array.append(data_dict)
+        frame_id += 1
     elif (module_name == "actdet_deepsort"):
       pickle_input = "%s/%s" % ("%s/pickle_d2/%s/%s" % (os.environ['RIM_DOCKER_SHARE'], "Caesar-Edge", "actdet_reid"), str(frame_id + 1).zfill(3))
       request = pickle.load(open(pickle_input))
@@ -127,14 +128,14 @@ def runBatch(batch_size, run_num, tid):
       for result in result_list:
         next_request = module_instance.GetNextRequest(result, grpc_flag = False)
 
-        # if (module_name == "actdet_inception"):
-        #   print(next_request["objdet_output"])
+        if (module_name == "actdet_inception"):
+          print(next_request["objdet_output"])
         #   pickle_output = "%s/%s" % (pickle_directory, str(frame_id).zfill(3))
         #   with open(pickle_output, 'w') as f:
         #     pickle.dump(next_request, f)
 
-        # if (module_name == "actdet_reid"):
-        #   # print(next_request["features"])
+        if (module_name == "actdet_reid"):
+          print(next_request["features"])
         #   pickle_output = "%s/%s" % (pickle_directory, str(frame_id).zfill(3))
         #   with open(pickle_output, 'w') as f:
         #     pickle.dump(next_request, f)
