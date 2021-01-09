@@ -149,13 +149,15 @@ class FeatureExtractor:
         for box in batched_data_dict["ds_boxes"][i]:
           patch = extract_image_patch(batched_data_dict["raw_image"][i], box, FeatureExtractor.image_shape[:2])
           if patch is None:
-            patch = np.random.uniform(0., 255., image_shape).astype(np.uint8)
+            patch = np.random.uniform(0., 255., FeatureExtractor.image_shape).astype(np.uint8)
           image_patches.append(patch)
         patch_num_array.append(len(batched_data_dict["ds_boxes"][i]))
       image_patches = np.asarray(image_patches)
 
       # out = np.zeros((len(image_patches), FeatureExtractor.feature_dim), np.float32)
       # data_len = len(out)
+      
+      # print("patch_num_array = %s" % str(patch_num_array))
 
       request = predict_pb2.PredictRequest()
       request.model_spec.name = 'actdet_reid'
