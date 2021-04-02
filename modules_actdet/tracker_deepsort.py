@@ -6,7 +6,7 @@ from time import time
 from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
 
-DS_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/deep_sort'
+DS_HOME = './modules_actdet/deep_sort'
 sys.path.insert(0, DS_HOME)
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
@@ -66,7 +66,7 @@ class DeepSort:
     def PostProcess(self):
         output = self.input
         if not self.input:
-            return ouptut
+            return output
 
         output['meta']['obj'] = []
         for tk in self.tracker.tracks:

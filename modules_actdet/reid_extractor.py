@@ -7,9 +7,9 @@ from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
 
 # Download the model file to 'checkpoints/'
-DEEPSORT_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/deepsort/mars-small128.pb'
+DEEPSORT_MODEL = './checkpoints/deepsort/mars-small128.pb'
 
-DS_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/deep_sort'
+DS_HOME = './modules_actdet/deep_sort'
 sys.path.insert(0, DS_HOME)
 # The original DS tools folder doesn't have init file, add it
 fout = open(join(DS_HOME, 'tools/__init__.py'), 'w')
@@ -70,7 +70,7 @@ class FeatureExtractor:
     def PostProcess(self):
         output = self.input
         if not self.input:
-            return ouptut
+            return output
 
         for i in range(len(self.ds_boxes)):
             output['meta']['obj'][i]['box'] = self.ds_boxes[i]

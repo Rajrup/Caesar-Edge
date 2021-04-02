@@ -8,9 +8,9 @@ from os.path import join
 import os 
 
 # Place your downloaded ckpt under "checkpoints/"
-SSD_CKPT = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/ssd/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
+SSD_CKPT = './checkpoints/ssd/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
 
-SSD_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/SSD-Tensorflow'
+SSD_HOME = './modules_actdet/SSD-Tensorflow'
 sys.path.insert(0, SSD_HOME)
 from nets import ssd_vgg_512, ssd_common, np_methods
 from preprocessing import ssd_vgg_preprocessing
@@ -109,7 +109,7 @@ class SSD:
 
         output['meta']['obj'] = []
         shape = self.input['img'].shape
-        for i in xrange(self.rbboxes.shape[0]):
+        for i in range(self.rbboxes.shape[0]):
             if self.rclasses[i] != SSD_PEOPLE_LABEL:
                 continue 
             bbox = self.rbboxes[i]

@@ -1,7 +1,10 @@
 opencv-python
-tensorflow
+tensorflow-gpu==1.13.1
 numpy
-dm-sonnet
-tensorflow-estimator==1.10.12  
-tensorflow-probability-gpu
+scipy
+scikit-learn==0.22.2
+# dm-sonnet
+matplotlib
+tensorflow-estimator==1.13.0  
+tensorflow-probability
 dm-sonnet==1.23

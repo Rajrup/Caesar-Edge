@@ -9,7 +9,7 @@ import sys
 
 # ============ Video Input Modules ============
 reader = DataReader()
-reader.Setup("/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/indoor_two_ppl.avi")
+reader.Setup("./video/indoor_two_ppl.avi")
 
 # ============ Object Detection Modules ============
 ssd = SSD()

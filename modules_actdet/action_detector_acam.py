@@ -8,7 +8,7 @@ from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
 
 # Download the model file to 'checkpoints/'
-ACAM_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/acam/model_ckpt_soft_attn_pooled_cosine_drop_ava-130'
+ACAM_MODEL = './checkpoints/acam/model_ckpt_soft_attn_pooled_cosine_drop_ava-130'
 
 # These two numbers should be same as your video input 
 VIDEO_WID = 1280    
