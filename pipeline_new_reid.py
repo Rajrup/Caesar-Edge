@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-TRACKER = "resnet"
+TRACKER = "resnet_reid" # 2 REID variants - deepsort_reid or resnet_reid
 
 # ============ Video Input Modules ============
 reader = DataReader()
@@ -29,7 +29,7 @@ ssd.Setup()
 object_detector = ssd
 
 # ============ Tracking Modules ============
-if TRACKER == "deepsort":
+if TRACKER == "deepsort_reid":
     feature_extractor = FeatureExtractor()
 else:
     feature_extractor = FeatureExtractor2()
