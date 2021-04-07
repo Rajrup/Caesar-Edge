@@ -6,9 +6,6 @@ import json
 
 # This is needed since the notebook is stored in the object_detection folder.
 sys.path.append("./modules_actdet/models/research")
-from object_detection.utils import ops as utils_ops
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
 
 # Place your downloaded ckpt under "checkpoints/"
 SSD_MODEL = './checkpoints/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'

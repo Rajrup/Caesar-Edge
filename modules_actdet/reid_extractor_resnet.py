@@ -6,20 +6,13 @@ from time import time
 from modules_actdet.data_reader import DataReader
 from modules_actdet.data_writer import DataWriter
 
-# # Download the model file to 'checkpoints/'
-# DEEPSORT_MODEL = './checkpoints/deepsort/mars-small128.pb'
-
 # Config File for the Resnet Model
 CONFIG_FILE = "./cfg/config.json"
 
-DS_HOME = './modules_actdet/deep_sort'
-sys.path.insert(0, DS_HOME)
+REID_HOME = './modules_actdet/reid'
+sys.path.append(REID_HOME)
 
-# The original DS tools folder doesn't have init file, add it
-fout = open(join(DS_HOME, 'tools/__init__.py'), 'w')
-fout.close()
-
-from tools.generate_detections_resnet import create_box_encoder2
+from generate_detections_resnet import create_box_encoder2
 
 '''
 Input: {'img': img_np_array, 
