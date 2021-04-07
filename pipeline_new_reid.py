@@ -1,5 +1,6 @@
 from modules_actdet.data_reader import DataReader
-from modules_actdet.object_detector_ssd import SSD
+# from modules_actdet.object_detector_ssd import SSD
+from modules_actdet.object_detector_ssd_mobilenet import SSD
 # from modules_actdet.object_detector_yolo import YOLO
 from modules_actdet.reid_extractor import FeatureExtractor
 from modules_actdet.reid_extractor_resnet import FeatureExtractor2

@@ -20,3 +20,11 @@ One module's output will go to the next one
 - Tracking ([DeepSORT](https://github.com/nwojke/deep_sort))
 - Action Detection ([ACAM](https://github.com/oulutan/ACAM_Demo/blob/master/README.md))
 - Triplet Reid ([REID](https://github.com/Rajrup/triplet-reid))
+
+
+## Random
+sudo apt-get install protobuf-compiler python-pil python-lxml python-tk
+git clone https://github.com/tensorflow/models.git
+git checkout r1.13.0
+cd models/research
+protoc object_detection/protos/*.proto --python_out=.

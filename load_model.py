@@ -4,28 +4,26 @@ import tensorflow as tf
 import os
 import json
 
-# Place your downloaded ckpt under "checkpoints/"
-SSD_CKPT = './checkpoints/ssd/VGG_VOC0712_SSD_512x512_ft_iter_120000.ckpt'
+# This is needed since the notebook is stored in the object_detection folder.
+sys.path.append("./models/research")
+from object_detection.utils import ops as utils_ops
+from object_detection.utils import label_map_util
+from object_detection.utils import visualization_utils as vis_util
 
-SSD_HOME = './modules_actdet/SSD-Tensorflow'
-sys.path.insert(0, SSD_HOME)
-from nets import ssd_vgg_512
-from preprocessing import ssd_vgg_preprocessing
+# Place your downloaded ckpt under "checkpoints/"
+SSD_MODEL = './checkpoints/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
+
+# List of the strings that is used to add correct label for each box.
+PATH_TO_LABELS = './models/research/object_detection/data/mscoco_label_map.pbtxt'
 
 # Config File for the Resnet Model
 CONFIG_FILE = "./cfg/config.json"
 
 DS_HOME = './modules_actdet/deep_sort'
-sys.path.insert(0, DS_HOME)
+sys.path.append(DS_HOME)
 
 import reid_nets.resnet_v1_50 as model
 import reid_heads.fc1024 as head
-
-SSD_THRES = 0.4
-SSD_NMS = 0.45
-SSD_NET_SHAPE = (512, 512)
-SSD_PEOPLE_LABEL = 15
-
 class SSD:
     rclasses = []
     rbboxes = []
@@ -33,40 +31,43 @@ class SSD:
     input = {}
 
     def Setup(self):
-        self.ckpt = SSD_CKPT
-        self.thres = SSD_THRES  
-        self.nms_thres = SSD_NMS
-        self.net_shape = SSD_NET_SHAPE
-
         gpu_options = tf.GPUOptions(allow_growth=True)
-        config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
+        gpu_config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
+        self.sess = tf.Session(config=gpu_config)
+
+        detection_graph = tf.Graph()
+        with detection_graph.as_default():
+            od_graph_def = tf.GraphDef()
+            with tf.gfile.GFile(SSD_MODEL, 'rb') as fid:
+                serialized_graph = fid.read()
+                od_graph_def.ParseFromString(serialized_graph)
+                tf.import_graph_def(od_graph_def, name='')
+
+        self.session = tf.Session()
+        with tf.gfile.GFile(SSD_MODEL, "rb") as file_handle:
+            od_graph_def = tf.GraphDef()
+            od_graph_def.ParseFromString(file_handle.read())
+        tf.import_graph_def(od_graph_def, name='')
+        ops = tf.get_default_graph().get_operations()
         
-        self.isess = tf.InteractiveSession(config=config)
-
-        data_format = 'NHWC'
-        self.img_input = tf.placeholder(tf.uint8, shape=(None, None, 3))
-
-        image_pre, labels_pre, bboxes_pre, bbox_img = ssd_vgg_preprocessing.preprocess_for_eval(
-                                        self.img_input, None, None, self.net_shape, data_format, 
-                                        resize=ssd_vgg_preprocessing.Resize.WARP_RESIZE)
+        all_tensor_names = {output.name for op in ops for output in op.outputs}
+        tensor_dict = {}
+        for key in ['num_detections', 'detection_boxes', 'detection_scores',
+                    'detection_classes', 'detection_masks']:
+            tensor_name = key + ':0'
+            if tensor_name in all_tensor_names:
+                tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(tensor_name)
         
-        self.image_4d = tf.expand_dims(image_pre, 0)
-        self.bbx = bbox_img
+        if 'detection_masks' in tensor_dict:
+            # The following processing is only for single image
+            detection_boxes = tf.squeeze(tensor_dict['detection_boxes'], [0])
+            detection_masks = tf.squeeze(tensor_dict['detection_masks'], [0])
+            # Reframe is required to translate mask from box coordinates to image coordinates and fit the image size.
+            real_num_detection = tf.cast(tensor_dict['num_detections'][0], tf.int32)
+            detection_boxes = tf.slice(detection_boxes, [0, 0], [real_num_detection, -1])
+            detection_masks = tf.slice(detection_masks, [0, 0, 0], [real_num_detection, -1, -1])
 
-        reuse = True if 'ssd_net' in locals() else None
-        ssd_net = ssd_vgg_512.SSDNet()
-        slim = tf.contrib.slim
-        with slim.arg_scope(ssd_net.arg_scope(data_format=data_format)):
-            predictions, localisations, _, _ = ssd_net.net(self.image_4d, is_training=False, reuse=reuse)
-
-        self.isess.run(tf.global_variables_initializer())
-        saver = tf.train.Saver()
-        saver.restore(self.isess, self.ckpt)
-
-        self.pred = predictions
-        self.loc = localisations
-        self.ssd_anchors = ssd_net.anchors(self.net_shape)
-        self.total_classes = 21
+        image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
 
         self.log('init done ')
 

@@ -4,3 +4,6 @@
 [submodule "modules/deep_sort"]
 	path = modules/deep_sort
 	url = https://github.com/sugartom/deep_sort.git
+[submodule "modules_actdet/models"]
+	path = modules_actdet/models
+	url = https://github.com/tensorflow/models.git
