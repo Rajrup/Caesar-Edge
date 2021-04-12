@@ -5,21 +5,18 @@ import os
 import json
 
 # This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("./models/research")
-from object_detection.utils import ops as utils_ops
-from object_detection.utils import label_map_util
-from object_detection.utils import visualization_utils as vis_util
+sys.path.append("./modules_actdet/models/research")
 
 # Place your downloaded ckpt under "checkpoints/"
 SSD_MODEL = './checkpoints/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 
 # List of the strings that is used to add correct label for each box.
-PATH_TO_LABELS = './models/research/object_detection/data/mscoco_label_map.pbtxt'
+PATH_TO_LABELS = './modules_actdet/research/object_detection/data/mscoco_label_map.pbtxt'
 
 # Config File for the Resnet Model
 CONFIG_FILE = "./cfg/config.json"
 
-DS_HOME = './modules_actdet/deep_sort'
+DS_HOME = './modules_actdet/reid'
 sys.path.append(DS_HOME)
 
 import reid_nets.resnet_v1_50 as model
@@ -83,7 +80,7 @@ class REID:
         self.sess = tf.InteractiveSession(config=gpu_config)
 
         # self.sess = tf.Session(config=gpu_config)
-        net_input_size = (config['net_input_height'], config['net_input_width'])
+        net_input_size = (config['input_height'], config['input_width'])
         checkpoint_filename = os.path.join(config['experiment_root'], config['checkpoint_filename'])
 
         self.image = tf.placeholder(tf.float32, (None, net_input_size[0], net_input_size[1], 3))
@@ -92,12 +89,11 @@ class REID:
         with tf.name_scope('head'):
             self.endpoints = head.head(self.endpoints, config['embedding_dim'], is_training=False)
 
-        self.sess.run(tf.global_variables_initializer())
         saver = tf.train.Saver()
         saver.restore(self.sess, checkpoint_filename)
 
         self.feature_dim = config['embedding_dim']
-        self.image_shape = [config['net_input_height'], config['net_input_width']]
+        self.image_shape = [config['input_height'], config['input_width']]
 
         self.log('init done')
 

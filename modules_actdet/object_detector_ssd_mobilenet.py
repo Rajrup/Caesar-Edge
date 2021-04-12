@@ -50,7 +50,7 @@ class SSD:
             if tensor_name in all_tensor_names:
                 self.tensor_dict[key] = tf.get_default_graph().get_tensor_by_name(tensor_name)
 
-        self.image_tensor = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
+        self.image = tf.get_default_graph().get_tensor_by_name('image_tensor:0')
 
         self.log('init done')
 
@@ -61,7 +61,7 @@ class SSD:
 
         # Run inference
         self.output_dict = self.sess.run(self.tensor_dict,
-                                feed_dict={self.image_tensor: np.expand_dims(self.input['img'], 0)})
+                                feed_dict={self.image: np.expand_dims(self.input['img'], 0)})
 
         # all outputs are float32 numpy arrays, so convert types as appropriate
         self.num_boxes = int(self.output_dict['num_detections'][0])

@@ -93,7 +93,6 @@ class ImageEncoder2(object):
         with tf.name_scope('head'):
             self.endpoints = head.head(self.endpoints, config['embedding_dim'], is_training=False)
 
-        self.isess.run(tf.global_variables_initializer())
         saver = tf.train.Saver()
         saver.restore(self.isess, checkpoint_filename)
 
