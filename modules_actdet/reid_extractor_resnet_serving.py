@@ -12,7 +12,7 @@ CONFIG_FILE = "./cfg/config.json"
 REID_HOME = './modules_actdet/reid'
 sys.path.append(REID_HOME)
 
-from generate_detections_resnet import create_box_encoder2
+from generate_detections_resnet_serving import create_box_encoder2
 
 '''
 Input: {'img': img_np_array, 
@@ -74,4 +74,4 @@ class FeatureExtractor2:
         return output 
 
     def log(self, s):
-        print('[FExtractor2] %s' % s)
+        print('[FExtractor2 Serving] %s' % s)

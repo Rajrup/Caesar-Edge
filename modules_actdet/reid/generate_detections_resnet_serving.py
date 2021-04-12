@@ -11,18 +11,23 @@ import sys
 import reid_nets.resnet_v1_50 as model
 import reid_heads.fc1024 as head
 
-def _run_in_batches(f, data_dict, out, batch_size):
+import grpc
+from tensorflow_serving.apis import predict_pb2
+from tensorflow_serving.apis import prediction_service_pb2_grpc
+from tensorflow.python.framework import tensor_util
+
+def _run_in_batches(f, data, out, batch_size):
     data_len = len(out)
     num_batches = int(data_len / batch_size)
 
     s, e = 0, 0
     for i in range(num_batches):
         s, e = i * batch_size, (i + 1) * batch_size
-        batch_data_dict = {k: v[s:e] for k, v in data_dict.items()}
-        out[s:e] = f(batch_data_dict)
+        batch_data = data[s:e]
+        out[s:e] = f(batch_data)
     if e < len(out):
-        batch_data_dict = {k: v[e:] for k, v in data_dict.items()}
-        out[e:] = f(batch_data_dict)
+        batch_data = data[e:]
+        out[e:] = f(batch_data)
 
 def extract_image_patch(image, bbox, patch_shape):
     """Extract image patch from bounding box.
@@ -74,35 +79,29 @@ class ImageEncoder2(object):
 
     def __init__(self, config_file):
         config = json.loads(open(config_file, 'r').read())
-
-        gpu_options = tf.GPUOptions(allow_growth=True)
-        gpu_config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
-        self.isess = tf.InteractiveSession(config=gpu_config)
-
-        # self.session = tf.Session()
         self.image_shape = [config['input_height'], config['input_width'], config['input_channel']]
-        net_input_size = (self.image_shape[0], self.image_shape[1])
-        checkpoint_filename = os.path.join(config['experiment_root'], config['checkpoint_filename'])
-
-        self.image = tf.placeholder(tf.float32, (None, net_input_size[0], net_input_size[1], 3))
-
-        self.endpoints, _ = model.endpoints(self.image, is_training=False)
-        with tf.name_scope('head'):
-            self.endpoints = head.head(self.endpoints, config['embedding_dim'], is_training=False)
-
-        saver = tf.train.Saver()
-        saver.restore(self.isess, checkpoint_filename)
-
-        # saver.restore(self.session, checkpoint_filename)
-
         self.feature_dim = config['embedding_dim']
-        # self.image_shape = [config['net_input_height'], config['net_input_width']]
+
+    def _tfs_run(self, input):
+        ichannel = grpc.insecure_channel("localhost:8500")
+        self.istub = prediction_service_pb2_grpc.PredictionServiceStub(ichannel)
+
+        self.internal_request = predict_pb2.PredictRequest()
+        self.internal_request.model_spec.name = 'triplet-reid'
+        self.internal_request.model_spec.signature_name = 'predict_images'
+
+        self.internal_request.inputs['input_image'].CopyFrom(
+        tf.contrib.util.make_tensor_proto(input, shape=input.shape))
+
+        self.internal_result = self.istub.Predict(self.internal_request, 10.0) # 10 sec timeout
+
+        output = tensor_util.MakeNdarray(self.internal_result.outputs['output_embedding'])
+
+        return output
 
     def __call__(self, data_x, batch_size=32):
         out = np.zeros((len(data_x), self.feature_dim), np.float32)
-        _run_in_batches(
-            lambda x: self.isess.run(self.endpoints['emb'], feed_dict=x),
-            {self.image: data_x}, out, batch_size)
+        _run_in_batches(self._tfs_run, data_x, out, batch_size)
         return out
 
 def create_box_encoder2(config_file, batch_size=32):

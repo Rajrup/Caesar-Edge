@@ -4,9 +4,6 @@ import tensorflow as tf
 import os
 import json
 
-# This is needed since the notebook is stored in the object_detection folder.
-sys.path.append("./modules_actdet/models/research")
-
 # Place your downloaded ckpt under "checkpoints/"
 SSD_MODEL = './checkpoints/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 
@@ -56,12 +53,13 @@ class SSD:
 
     def PreProcess(self, input):
         self.input = input
+        self.input_image = np.expand_dims(self.input['img'], 0)
 
     def Apply(self):
 
         # Run inference
         self.output_dict = self.sess.run(self.tensor_dict,
-                                feed_dict={self.image: np.expand_dims(self.input['img'], 0)})
+                                feed_dict={self.image: self.input_image})
 
         # all outputs are float32 numpy arrays, so convert types as appropriate
         self.num_boxes = int(self.output_dict['num_detections'][0])

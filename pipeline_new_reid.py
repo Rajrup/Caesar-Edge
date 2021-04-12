@@ -1,19 +1,41 @@
 from modules_actdet.data_reader import DataReader
-# from modules_actdet.object_detector_ssd import SSD
-from modules_actdet.object_detector_ssd_mobilenet import SSD
-# from modules_actdet.object_detector_yolo import YOLO
-from modules_actdet.reid_extractor import FeatureExtractor
-from modules_actdet.reid_extractor_resnet import FeatureExtractor2
-from modules_actdet.tracker_deepsort import DeepSort
-# from modules_actdet.tube_manager import TubeManager
-# from modules_actdet.action_detector_acam import ACAM
+
 import sys
 import cv2 
 import numpy as np
 import matplotlib.pyplot as plt
 import time
 
-TRACKER = "resnet_reid" # 2 REID variants - deepsort_reid or resnet_reid
+if (len(sys.argv) < 3):
+    print("Less than 3 arguments")
+    print("Argument 1: original/serving")
+    print("Argument 2: deepsort_reid/resnet_reid")
+    exit()
+
+if sys.argv[1] == 'original' or sys.argv[1] == 'serving': 
+    mode = sys.argv[1]  
+else:
+    print("Argument 1 invalid, pass original/serving")
+    exit()
+
+if sys.argv[2] == 'deepsort_reid' or sys.argv[2] == 'resnet_reid':  # 2 REID variants - deepsort_reid or resnet_reid
+    TRACKER = sys.argv[2]
+else:
+    print("Argument 2 invalid, pass deepsort_reid/resnet_reid")
+    exit()
+
+# TF version
+if (mode == "original"):
+    from modules_actdet.object_detector_ssd_mobilenet import SSD
+    from modules_actdet.reid_extractor import FeatureExtractor # Only TF version is available
+    from modules_actdet.reid_extractor_resnet import FeatureExtractor2
+    from modules_actdet.tracker_deepsort import DeepSort
+
+# TF serving version 
+elif (mode == "serving"):
+    from modules_actdet.object_detector_ssd_mobilenet_serving import SSD
+    from modules_actdet.reid_extractor_resnet_serving import FeatureExtractor2
+    from modules_actdet.tracker_deepsort import DeepSort
 
 # ============ Video Input Modules ============
 reader = DataReader()
@@ -22,9 +44,6 @@ reader.Setup("./video/indoor_two_ppl.avi")
 # ============ Object Detection Modules ============
 ssd = SSD()
 ssd.Setup()
-
-# yolo = YOLO()
-# yolo.Setup()
 
 object_detector = ssd
 
@@ -41,15 +60,6 @@ deepsort.Setup()
 tracker = deepsort
 
 track_output = "./video/tracker_{}.avi".format(TRACKER)
-
-# # ============ Action Detection Modules ============
-# tube_manager = TubeManager()
-# tube_manager.Setup()
-
-# acam = ACAM()
-# acam.Setup()
-
-# action_detector = acam
 
 width = int(reader.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(reader.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -115,17 +125,3 @@ try:
 except KeyboardInterrupt:
     if track_out:
         track_out.release()
-
-    
-    #     # Action detection module 
-    #     tube_manager.PreProcess(track_data)
-    #     tube_manager.Apply()
-    #     tube_data = tube_manager.PostProcess()
-
-    #     action_detector.PreProcess(tube_data)
-    #     action_detector.Apply()
-    #     action_data = action_detector.PostProcess()
-
-    #     if action_data:
-    #         # print(action_data['meta']['obj'])
-    #         print(action_data['meta'])

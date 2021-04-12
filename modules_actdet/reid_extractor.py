@@ -46,7 +46,7 @@ class FeatureExtractor:
 
     def Setup(self):
         self.encoder = create_box_encoder(DEEPSORT_MODEL, batch_size=16)
-        self.log('init')
+        self.log('init done')
 
 
     def PreProcess(self, input):

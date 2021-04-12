@@ -40,7 +40,7 @@ class DeepSort:
     def Setup(self):
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", 0.2, None)
         self.tracker = Tracker(metric, max_iou_distance=0.7, max_age=200, n_init=4)
-        self.log('init')
+        self.log('init done')
 
 
     def PreProcess(self, input):
