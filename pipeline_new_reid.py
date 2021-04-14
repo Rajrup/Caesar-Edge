@@ -13,7 +13,7 @@ if (len(sys.argv) < 3):
     exit()
 
 if sys.argv[1] == 'original' or sys.argv[1] == 'serving': 
-    mode = sys.argv[1]  
+    MODE = sys.argv[1]  
 else:
     print("Argument 1 invalid, pass original/serving")
     exit()
@@ -25,15 +25,16 @@ else:
     exit()
 
 # TF version
-if (mode == "original"):
+if (MODE == "original"):
     from modules_actdet.object_detector_ssd_mobilenet import SSD
     from modules_actdet.reid_extractor import FeatureExtractor # Only TF version is available
     from modules_actdet.reid_extractor_resnet import FeatureExtractor2
     from modules_actdet.tracker_deepsort import DeepSort
 
 # TF serving version 
-elif (mode == "serving"):
+elif (MODE == "serving"):
     from modules_actdet.object_detector_ssd_mobilenet_serving import SSD
+    from modules_actdet.reid_extractor_serving import FeatureExtractor
     from modules_actdet.reid_extractor_resnet_serving import FeatureExtractor2
     from modules_actdet.tracker_deepsort import DeepSort
 
@@ -59,7 +60,7 @@ deepsort.Setup()
 
 tracker = deepsort
 
-track_output = "./video/tracker_{}.avi".format(TRACKER)
+track_output = "./video/tracker_{}_{}.avi".format(TRACKER, MODE)
 
 width = int(reader.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 height = int(reader.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -92,8 +93,8 @@ try:
         feature_extractor.Apply()
         feature_data = feature_extractor.PostProcess()
 
-        for feat in feature_data['meta']['obj']:
-            print(feat['feature'].shape)
+        # for feat in feature_data['meta']['obj']:
+        #     print(feat['feature'].shape)
 
         tracker.PreProcess(feature_data)
         tracker.Apply()

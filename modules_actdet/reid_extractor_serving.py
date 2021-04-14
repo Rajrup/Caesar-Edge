@@ -29,7 +29,7 @@ from tensorflow.python.framework import tensor_util
 # # Download the model file to 'checkpoints/'
 # DEEPSORT_MODEL = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/checkpoints/deepsort/mars-small128.pb'
 
-DS_HOME = '/home/yitao/Documents/fun-project/tensorflow-related/Caesar-Edge/modules_actdet/deep_sort'
+DS_HOME = './modules_actdet/deep_sort'
 sys.path.insert(0, DS_HOME)
 # The original DS tools folder doesn't have init file, add it
 fout = open(join(DS_HOME, 'tools/__init__.py'), 'w')
@@ -66,9 +66,7 @@ class FeatureExtractor:
 
     def Setup(self):
         # self.encoder = create_box_encoder(DEEPSORT_MODEL, batch_size=16)
-        # self.log('init')
-        pass
-
+        self.log('Init Done')
 
     def PreProcess(self, input):
         ichannel = grpc.insecure_channel("localhost:8500")
@@ -96,7 +94,7 @@ class FeatureExtractor:
     def PostProcess(self):
         output = self.input
         if not self.input:
-            return ouptut
+            return output
 
         for i in range(len(self.ds_boxes)):
             output['meta']['obj'][i]['box'] = self.ds_boxes[i]
@@ -106,5 +104,5 @@ class FeatureExtractor:
 
 
     def log(self, s):
-        print('[FExtractor] %s' % s)
+        print('[FExtractor Serving] %s' % s)
 

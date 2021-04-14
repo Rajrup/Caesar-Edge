@@ -22,9 +22,13 @@ sys.path.append("./modules_actdet/models/research")
 # Place your downloaded ckpt under "checkpoints/"
 SSD_MODEL = './checkpoints/ssd_mobilenet_v1_coco_2017_11_17/frozen_inference_graph.pb'
 
+# Deepsort Reid model
+DEEPSORT_MODEL = './checkpoints/deepsort/mars-small128.pb'
+
 # Path to tf servable model
 EXPORT_SSD_MODEL = './tf_servable/ssd_mobilenet_v1_coco_2017_11_17'
-EXPORT_REID_MODEL = './tf_servable/triplet-reid'
+EXPORT_TRIPLET_MODEL = './tf_servable/triplet-reid'
+EXPORT_DEEPSORT_MODEL = './tf_servable/deepsort-reid'
 
 # List of the strings that is used to add correct label for each box.
 PATH_TO_LABELS = './modules_actdet/research/object_detection/data/mscoco_label_map.pbtxt'
@@ -118,7 +122,66 @@ class SSD:
     def log(self, s):
         print('[SSD] %s' % s)
 
-class REID:
+class DEEPSORT_REID:
+    def Setup(self):
+        gpu_options = tf.GPUOptions(allow_growth=True)
+        gpu_config = tf.ConfigProto(log_device_placement=False, gpu_options=gpu_options)
+        self.sess = tf.Session(config=gpu_config)
+        
+        with tf.gfile.GFile(DEEPSORT_MODEL, "rb") as file_handle:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(file_handle.read())
+        tf.import_graph_def(graph_def, name="net")
+
+        input_name="images"
+        output_name="features"
+        self.input_var = tf.get_default_graph().get_tensor_by_name(
+            "net/%s:0" % input_name)
+        self.output_var = tf.get_default_graph().get_tensor_by_name(
+            "net/%s:0" % output_name)
+
+        assert len(self.output_var.get_shape()) == 2
+        assert len(self.input_var.get_shape()) == 4
+        self.feature_dim = self.output_var.get_shape().as_list()[-1]
+        self.image_shape = self.input_var.get_shape().as_list()[1:]
+
+    def export_model(self):
+        # Yitao-TLS-Begin
+        if not os.path.exists(EXPORT_DEEPSORT_MODEL):
+            os.makedirs(EXPORT_DEEPSORT_MODEL)
+
+        export_path = os.path.join(
+            compat.as_bytes(os.path.abspath(EXPORT_DEEPSORT_MODEL)),
+            compat.as_bytes(str(FLAGS.model_version)))
+
+        self.log('Exporting trained model to {}'.format(export_path))
+        builder = saved_model_builder.SavedModelBuilder(export_path)
+
+        input_image = tf.saved_model.utils.build_tensor_info(self.input_var)
+        output_embedding = tf.saved_model.utils.build_tensor_info(self.output_var)
+
+        prediction_signature = tf.saved_model.signature_def_utils.build_signature_def(
+            inputs = {'input_image': input_image},
+            outputs = { 'output_embedding': output_embedding},
+            method_name = tf.saved_model.signature_constants.PREDICT_METHOD_NAME)
+
+        legacy_init_op = tf.group(tf.tables_initializer(), name='legacy_init_op')
+        builder.add_meta_graph_and_variables(
+            self.sess, [tf.saved_model.tag_constants.SERVING],
+            signature_def_map={
+                'predict_images':
+                    prediction_signature,
+            },
+            legacy_init_op=legacy_init_op)
+
+        builder.save()
+
+        self.log('Exporting Done!')
+        # Yitao-TLS-End
+
+    def log(self, s):
+        print('[DEEPSORT REID] %s' % s)
+class RESNET_REID:
     def Setup(self):
         config = json.loads(open(CONFIG_FILE, 'r').read())
 
@@ -147,11 +210,11 @@ class REID:
 
     def export_model(self):
         # Yitao-TLS-Begin
-        if not os.path.exists(EXPORT_REID_MODEL):
-            os.makedirs(EXPORT_REID_MODEL)
+        if not os.path.exists(EXPORT_TRIPLET_MODEL):
+            os.makedirs(EXPORT_TRIPLET_MODEL)
 
         export_path = os.path.join(
-            compat.as_bytes(os.path.abspath(EXPORT_REID_MODEL)),
+            compat.as_bytes(os.path.abspath(EXPORT_TRIPLET_MODEL)),
             compat.as_bytes(str(FLAGS.model_version)))
 
         self.log('Exporting trained model to {}'.format(export_path))
@@ -180,18 +243,20 @@ class REID:
         # Yitao-TLS-End
 
     def log(self, s):
-        print('[REID] %s' % s)
+        print('[RESNET REID] %s' % s)
 
 def main():
-# ============ Object Detection Modules ============
     ssd = SSD()
     ssd.Setup()
     # ssd.export_model()
 
-# ============ Tracking Modules ============
-    feature_extractor = REID()
+    feature_extractor = DEEPSORT_REID()
     feature_extractor.Setup()
     feature_extractor.export_model()
+
+    feature_extractor = RESNET_REID()
+    feature_extractor.Setup()
+    # feature_extractor.export_model()
 
     print("Done")
 
